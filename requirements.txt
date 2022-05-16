@@ -3,3 +3,6 @@ djangorestframework
 python-dotenv
 PyMySQL
 mysqlclient
+auth
+djangorestframework-simplejwt
+django-filter
