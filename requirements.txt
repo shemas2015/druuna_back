@@ -6,3 +6,5 @@ mysqlclient
 auth
 djangorestframework-simplejwt
 django-filter
+django-cors-headers
+Pillow

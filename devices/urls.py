@@ -7,3 +7,9 @@ router.register(r'devices',  devices_views.DeviceViewSet , basename='devices')
 urlpatterns = [
     path('', include(router.urls))
 ]
+
+
+router.register(r'devices_user',  devices_views.DeviceUserViewSet , basename='devices_user')
+urlpatterns = [
+    path('', include(router.urls))
+]
