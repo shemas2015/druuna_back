@@ -9,13 +9,18 @@ class DeviceModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Device
         fields = "__all__"
+        
+
+    
 
 
 class DeviceUserModelSerializer(serializers.ModelSerializer):
-    #device = DeviceModelSerializer(read_only =True)
+    
     class Meta:
         model = UserDevice
-        fields = ["id","device","mac"]
+        fields = ("id","device","mac")
+
+    
         depth = 1
 
     def __init__(self, *args, **kwargs):
@@ -25,3 +30,4 @@ class DeviceUserModelSerializer(serializers.ModelSerializer):
             self.Meta.depth = 0
         else:
             self.Meta.depth = 1
+    

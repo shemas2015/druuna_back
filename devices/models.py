@@ -8,7 +8,7 @@ from django.conf import settings
 
 class Device( models.Model):
     name  = models.CharField(max_length=200,unique=True)
-    image = models.ImageField(upload_to='devices_img')
+    image = models.ImageField(upload_to='devices/devices_img')
 
 class UserDevice( models.Model ):
     mac   = models.CharField( max_length = 200 , unique=True )

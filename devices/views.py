@@ -1,5 +1,5 @@
 from xmlrpc.client import ResponseError
-from django.http.response import FileResponse, Http404, JsonResponse
+from django.http.response import FileResponse,HttpResponse
 from rest_framework.response import Response
 from rest_framework import viewsets,status
 from rest_framework.permissions import IsAuthenticated
@@ -18,6 +18,15 @@ class DeviceViewSet(viewsets.ModelViewSet):
     serializer_class    = DeviceModelSerializer
     permission_classes  = [IsAuthenticated]
 
+    @action(detail=False, methods=['GET'], name='Return device img' , url_path=r'devices_img/(?P<file_name>\w+\..*)', )
+    def devices_img( self , request , file_name ):
+        """
+        Download a device image
+        """
+        image = open('devices/devices_img/{}'.format(file_name), 'rb')
+
+        return HttpResponse(image, content_type="image/jpeg")
+        #return FileResponse(image)
     
 
 
