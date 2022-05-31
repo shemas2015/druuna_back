@@ -27,6 +27,7 @@ class DeviceViewSet(viewsets.ModelViewSet):
 
         return HttpResponse(image, content_type="image/jpeg")
         #return FileResponse(image)
+        #return Response("setting");
     
 
 
