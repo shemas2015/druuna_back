@@ -1,3 +1,4 @@
+from email.quoprimime import unquote
 from xmlrpc.client import ResponseError
 from django.http.response import FileResponse,HttpResponse
 from rest_framework.response import Response
@@ -26,8 +27,6 @@ class DeviceViewSet(viewsets.ModelViewSet):
         image = open('devices/devices_img/{}'.format(file_name), 'rb')
 
         return HttpResponse(image, content_type="image/jpeg")
-        #return FileResponse(image)
-        #return Response("setting");
     
 
 
@@ -35,6 +34,18 @@ class DeviceUserViewSet(viewsets.ModelViewSet):
     queryset = UserDevice.objects.all()
     serializer_class = DeviceUserModelSerializer
     permission_classes  = [IsAuthenticated]
+
+    
+    @action(detail=False, methods=['POST'], name='Return device img' , url_path=r'get_by_mac', )
+    def get_by_mac( self , request ):
+        """
+        Download a device image
+        """
+
+        mac           = request.data["mac"]
+        qs            = super().get_queryset()
+        serializer    = self.get_serializer(qs.filter(mac=mac), many=True)
+        return Response(serializer.data)
 
     def get_queryset( self ):
         return UserDevice.objects.filter( owner_id = self.request.user.id )
