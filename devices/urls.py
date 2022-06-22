@@ -13,3 +13,15 @@ router.register(r'devices_user',  devices_views.DeviceUserViewSet , basename='de
 urlpatterns = [
     path('', include(router.urls))
 ]
+
+
+router.register(r'pages',  devices_views.PageViewSet , basename='pages')
+urlpatterns = [
+    path('', include(router.urls))
+]
+
+
+router.register(r'config',  devices_views.ConfigViewSet , basename='pages')
+urlpatterns = [
+    path('', include(router.urls))
+]

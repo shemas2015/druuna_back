@@ -1,11 +1,12 @@
 from email.quoprimime import unquote
 from xmlrpc.client import ResponseError
 from django.http.response import FileResponse,HttpResponse
+from requests import delete
 from rest_framework.response import Response
 from rest_framework import viewsets,status
 from rest_framework.permissions import IsAuthenticated
-from devices.models import Device, UserDevice
-from devices.serializers import DeviceModelSerializer, DeviceUserModelSerializer
+from devices.models import Device, Page, PageConfig, UserDevice
+from devices.serializers import ConfigModelSerializer, DeviceModelSerializer, DeviceUserModelSerializer, PageModelSerializer
 from rest_framework.decorators import action
 
 
@@ -73,5 +74,57 @@ class DeviceUserViewSet(viewsets.ModelViewSet):
 
     
 
+
+class PageViewSet(viewsets.ModelViewSet):
+    queryset            = Page.objects.all()
+    serializer_class    = PageModelSerializer
+    permission_classes  = [IsAuthenticated]
+
+    
+
+class ConfigViewSet(viewsets.ModelViewSet):
+    queryset            = PageConfig.objects.all()
+    serializer_class    = ConfigModelSerializer
+    permission_classes  = [IsAuthenticated]
+    
+
+    #Consulta únicamente la configuración del usuario logueado (get all)
+    def list(self ,request):
+        configs = PageConfig.objects.filter(user_device__owner = self.request.user.id)
+        serialize = ConfigModelSerializer(configs , many=True )
+        return Response(serialize.data)
+        
+
+    def create(self,request):
+        data    = request.data
+        owner   = UserDevice.objects.get(id = data["user_device"])
+        if owner.owner.id != self.request.user.id:
+            return Response({"error" : "This device does not belong to the user"},status = status.HTTP_400_BAD_REQUEST)
+
+        return super().create(request)
+
+    #Editar - Si el dispositivo no pertenece al usuario logueado no permite hacer la conexión
+    def update(self , request , pk ):
+        config = PageConfig.objects.get(id = pk)
+        if config.user_device.owner_id !=  self.request.user.id:
+            return Response({"error" : "This device does not belong to the user"},status = status.HTTP_400_BAD_REQUEST)
+
+        request.data._mutable = True
+        request.data.update({"user_device": config.user_device.id})
+        return super().update(  request )
+
+    def destroy( self,request,pk ):
+        config = PageConfig.objects.get(id = pk)
+        if config.user_device.owner_id !=  self.request.user.id:
+            return Response({"error" : "This device does not belong to the user"},status = status.HTTP_400_BAD_REQUEST)
+
+        return super().destroy( request )
+
+
+    
+
+
+
+    #Get By id - Si el dispositivo no pertenece al usuario logueado no permite hacer la conexión
 
     

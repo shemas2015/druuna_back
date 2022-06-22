@@ -1,6 +1,6 @@
 from pickletools import read_long1
 from rest_framework import serializers
-from devices.models import Device,UserDevice
+from devices.models import Device, Page, PageConfig,UserDevice
 
 
 
@@ -11,8 +11,18 @@ class DeviceModelSerializer(serializers.ModelSerializer):
         fields = "__all__"
         
 
-    
-
+class PageModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Page
+        fields = "__all__"
+        
+   
+class ConfigModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PageConfig
+        fields = "__all__"
+        
+   
 
 class DeviceUserModelSerializer(serializers.ModelSerializer):
     
