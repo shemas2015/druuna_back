@@ -1,3 +1,4 @@
+from asyncore import read
 from email.quoprimime import unquote
 from xmlrpc.client import ResponseError
 from django.http.response import FileResponse,HttpResponse
@@ -88,9 +89,23 @@ class ConfigViewSet(viewsets.ModelViewSet):
     permission_classes  = [IsAuthenticated]
     
 
+    
     #Consulta únicamente la configuración del usuario logueado (get all)
     def list(self ,request):
-        configs = PageConfig.objects.filter(user_device__owner = self.request.user.id)
+        configs   = PageConfig.objects.filter(user_device__owner = self.request.user.id)
+        serialize = ConfigModelSerializer(configs , many=True  )
+        return Response(serialize.data)
+    
+
+
+    @action(detail=False, methods=['GET'], name='show all config of specific user device' , url_path=r'get_by_device/(?P<device_id>\w+)', )
+    def get_by_device(self , request , device_id ):
+        user_device = UserDevice.objects.get(id = device_id)
+        
+        if user_device.owner_id !=  self.request.user.id:
+            return Response({"error" : "This device does not belong to the user"},status = status.HTTP_400_BAD_REQUEST)
+        
+        configs   = PageConfig.objects.filter(user_device = user_device)
         serialize = ConfigModelSerializer(configs , many=True )
         return Response(serialize.data)
         
@@ -109,10 +124,10 @@ class ConfigViewSet(viewsets.ModelViewSet):
         if config.user_device.owner_id !=  self.request.user.id:
             return Response({"error" : "This device does not belong to the user"},status = status.HTTP_400_BAD_REQUEST)
 
-        request.data._mutable = True
+        #request.data._mutable = True
         request.data.update({"user_device": config.user_device.id})
+        request.data.update({"page": config.page.id})
         return super().update(  request )
-
     def destroy( self,request,pk ):
         config = PageConfig.objects.get(id = pk)
         if config.user_device.owner_id !=  self.request.user.id:
