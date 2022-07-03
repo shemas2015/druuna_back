@@ -12,13 +12,16 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 from datetime import timedelta
 from pathlib import Path
-from dotenv import load_dotenv
-
-
 import os
+import environ
 
 
-load_dotenv()
+env = environ.Env()
+environ.Env.read_env()
+
+
+
+
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -34,7 +37,8 @@ SECRET_KEY = 'django-insecure-bpyijzvd-toyuqebg-lkwj#j-@jg4&!5+%w_5hpk==gl^1l36k
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",")
+#ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",")
+ALLOWED_HOSTS = env("ALLOWED_HOSTS").split(",")
 
 
 # Application definition

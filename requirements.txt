@@ -8,3 +8,4 @@ djangorestframework-simplejwt
 django-filter
 django-cors-headers
 Pillow
+django-environ
