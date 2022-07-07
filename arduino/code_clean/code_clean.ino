@@ -21,6 +21,8 @@ void setup() {
   //main_func();
 
   configWifi();
+
+
   
 
 }
@@ -94,9 +96,11 @@ void reset(){
 
 
 void configWifi(){
+  String str;
+  int index;
   WiFiServer server(80);
   Serial.println("Configuring wifi...");
-  WiFi.softAP("Druuna", "password");
+  WiFi.softAP("Druuna Funck Machine", "");
   IPAddress IP = WiFi.softAPIP();
   Serial.print("AP IP address: ");
   Serial.println(IP);
@@ -107,26 +111,37 @@ void configWifi(){
   while( ssid == "" || password =="" ){ 
     WiFiClient client= server.available();
     String header;
-  
-    if (client) {                             // If a new client connects,
-      Serial.println("New Client.");          // print a message out in the serial port
-      String currentLine = "";                // make a String to hold incoming data from the client
+    if (client) {
+      Serial.println("New Client.");
+      String currentLine = "";
       while (client.connected()) {
-        if (client.available()) {             // if there's bytes to read from the client,
-        char c = client.read();             // read a byte, then
-        Serial.write(c);                    // print it out the serial monitor
+        if (client.available()) {
+        char c = client.read();
+        //Serial.write(c);
         header += c;
-        if (c == '\n') {                    // if the byte is a newline character
+        if (c == '\n') {
           client.println("HTTP/1.1 200 OK");
           client.println("Content-type:text/html");
           client.println("Connection: close");
           client.println();
-          
+
+          str = header;
+          int posit = 0;
+          do{
+            index = str.indexOf("dR4n4l");
+            if( posit == 1 ){
+              Serial.println("SSID: "+str.substring(0,index));
+            }
+            if( posit == 2 ){
+              Serial.println("Password: "+str.substring(0,index));
+            }
+            str = str.substring(index  + 6, str.length() );
+            posit++;
+          }while(index > 0);
           currentLine = "";
-          // Break out of the while loop
           break;
-        } else if (c != '\r') {  // if you got anything else but a carriage return character,
-          currentLine += c;      // add it to the end of the currentLine
+        } else if (c != '\r') {
+          currentLine += c;
         }
       }
       }
@@ -134,20 +149,6 @@ void configWifi(){
     delay(800);
     
   }
-  /*
-  if( ssid != "" && password != ""){
-    preferences.begin("credenciales",false);
-    preferences.putString("ssid",ssid);
-    preferences.putString("password",password);
-    preferences.end();
-    SerialBT.end();
-    //Apaga indicador de conexión
-    //OJO!!! <- Aqui detiene el bluetooth
-  }
-  */
-  
-  
-  
 }
 
 
