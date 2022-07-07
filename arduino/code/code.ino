@@ -89,45 +89,62 @@ void reset(){
 
 
 void configWifi(){
+  String str;
+  int index;
+  WiFiServer server(80);
   Serial.println("Configuring wifi...");
-  //indicador de espera de conexión
-  String tmpWifi = "";
-  //Desconecta wifi para activa bluetooth
-  WiFi.disconnect(true);
+  WiFi.softAP("Druuna Funck Machine", "");
+  IPAddress IP = WiFi.softAPIP();
+  Serial.print("AP IP address: ");
+  Serial.println(IP);
   
-  
-  //Lee por bluetooth las credenciales y las asigna
-  SerialBT.begin("Druuna Fuck Machine"); //Bluetooth device name
+  server.begin();
+  Serial.println("HTTP server started");
 
   while( ssid == "" || password =="" ){ 
-    if (SerialBT.available()) {
-      while(SerialBT.available()){
-        char incomingChar = SerialBT.read();
-        tmpWifi += String(incomingChar);
-      }
-      if( ssid == "" ){
-        ssid  = tmpWifi ;
-      }else{
-        password = tmpWifi ;
-      }
-      Serial.println(tmpWifi);
-      tmpWifi = "";
-      SerialBT.write(1);
-      
-    }
-    delay(100);
-  }
+    WiFiClient client= server.available();
+    String header;
+    if (client) {
+      String currentLine = "";
+      while (client.connected()) {
+        if (client.available()) {
+        char c = client.read();
+        //Serial.write(c);
+        header += c;
+        if (c == '\n') {
+          client.println("HTTP/1.1 200 OK");
+          client.println("Content-type:text/html");
+          client.println("Connection: close");
+          client.println();
 
-  if( ssid != "" && password != ""){
-    preferences.begin("credenciales",false);
-    preferences.putString("ssid",ssid);
-    preferences.putString("password",password);
-    preferences.end();
-    SerialBT.end();
-    //Apaga indicador de conexión
-    //OJO!!! <- Aqui detiene el bluetooth
+          str = header;
+          int posit = 0;
+          preferences.begin("credenciales",false);
+          do{
+            index = str.indexOf("dR4n4l");
+            if( posit == 1 ){
+              ssid = str.substring(0,index);
+              preferences.putString("ssid",ssid );
+            }
+            if( posit == 2 ){
+              password = str.substring(0,index);
+              preferences.putString("password",password);
+            }
+            str = str.substring(index  + 6, str.length() );
+            posit++;
+          }while(index > 0);
+          preferences.end();
+          currentLine = "";
+          client.stop();
+        } else if (c != '\r') {
+          currentLine += c;
+        }
+      }
+      }
+    }
+    delay(800);
   }
-  
+  Serial.println("Confguración terminada");
   
   
   
