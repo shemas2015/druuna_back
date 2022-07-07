@@ -107,13 +107,6 @@ void configWifi(){
   while( ssid == "" || password =="" ){ 
     WiFiClient client= server.available();
     String header;
-    String output26State = "off";
-    String output27State = "off";
-
-    // Assign output variables to GPIO pins
-    const int output26 = 26;
-    const int output27 = 27;
-
   
     if (client) {                             // If a new client connects,
       Serial.println("New Client.");          // print a message out in the serial port
@@ -124,43 +117,22 @@ void configWifi(){
         Serial.write(c);                    // print it out the serial monitor
         header += c;
         if (c == '\n') {                    // if the byte is a newline character
-          //if (currentLine.length() > 0) {
-            client.println("HTTP/1.1 200 OK");
-            client.println("Content-type:text/html");
-            client.println("Connection: close");
-            client.println();
-            
-            currentLine = "";
-            // Break out of the while loop
-            break;
-          //}
+          client.println("HTTP/1.1 200 OK");
+          client.println("Content-type:text/html");
+          client.println("Connection: close");
+          client.println();
+          
+          currentLine = "";
+          // Break out of the while loop
+          break;
         } else if (c != '\r') {  // if you got anything else but a carriage return character,
           currentLine += c;      // add it to the end of the currentLine
         }
       }
       }
-
     }
-    Serial.println("pasó!");
     delay(800);
-    /*
-    if (SerialBT.available()) {
-      while(SerialBT.available()){
-        char incomingChar = SerialBT.read();
-        tmpWifi += String(incomingChar);
-      }
-      if( ssid == "" ){
-        ssid  = tmpWifi ;
-      }else{
-        password = tmpWifi ;
-      }
-      Serial.println(tmpWifi);
-      tmpWifi = "";
-      SerialBT.write(1);
-      
-    }
-    */
-    delay(500);
+    
   }
   /*
   if( ssid != "" && password != ""){
