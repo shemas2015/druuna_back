@@ -97,6 +97,9 @@ void configWifi(){
   IPAddress IP = WiFi.softAPIP();
   Serial.print("AP IP address: ");
   Serial.println(IP);
+
+  Serial.print("MAC address: ");
+  Serial.println(WiFi.macAddress());
   
   server.begin();
   Serial.println("HTTP server started");
