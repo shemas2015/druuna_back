@@ -93,13 +93,11 @@ void configWifi(){
   int index;
   WiFiServer server(80);
   Serial.println("Configuring wifi...");
-  WiFi.softAP("Druuna Funck Machine", "");
+  WiFi.softAP("Druuna", "");
   IPAddress IP = WiFi.softAPIP();
   Serial.print("AP IP address: ");
   Serial.println(IP);
 
-  Serial.print("MAC address: ");
-  Serial.println(WiFi.macAddress());
   
   server.begin();
   Serial.println("HTTP server started");
@@ -116,9 +114,12 @@ void configWifi(){
         header += c;
         if (c == '\n') {
           client.println("HTTP/1.1 200 OK");
+          client.println("Access-Control-Allow-Origin: *");
           client.println("Content-type:text/html");
           client.println("Connection: close");
           client.println();
+
+          client.println(WiFi.macAddress());
 
           str = header;
           int posit = 0;
