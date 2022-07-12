@@ -1,3 +1,4 @@
+from multiprocessing.sharedctypes import Value
 from django.core.management.base import BaseCommand, CommandError
 import socket   
 import threading
@@ -78,10 +79,12 @@ class Command(BaseCommand):
                     break
                 
                 if( client.get_socket_web() is not None ):
-                    self.send_message( client.get_socket_device(), socket_web_msg )
-
+                    lst = range(0, int(socket_web_msg))
+                    for i in range(0, len(lst), 9):
+                        self.send_message( client.get_socket_device(), "{}".format(len(lst[i:i + 9])).encode("utf-8") )
+            except ValueError as e:
+                print("{} no es un valor numérico válido".format(socket_web_msg))
             except Exception as ex:
-                print("acá exception..." ,ex )
                 client.get_socket_web().close()
                 break
         

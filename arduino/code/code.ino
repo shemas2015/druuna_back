@@ -8,11 +8,13 @@ String password;
 String command;
 String server = "https://www.google.com/";
 bool userInput = false;
+const char * udpAddress = "172.30.1.81";
+const int udpPort = 55555;
 
 
 Preferences preferences;
 BluetoothSerial SerialBT;
-
+WiFiClient client;
 
 void setup() {
   Serial.begin(115200);
@@ -41,8 +43,37 @@ void loop() {
   }
 
   //Check internet conection
+  if( client.connected() ){
+    while (client.available()) {
+      char c = client.read();
+      int del = c - '0';
+      Serial.print("Prende ");
+      Serial.print(del);
+      Serial.println(" segundos");
+      delay(del*1000);
+      Serial.print("Apaga");
+      
+    }
+    
+    
+  }
+  else{
+    connectToHost();
+    delay(2000);
+  }
 
   delay(500);
+  
+}
+
+void connectToHost(){
+  if(!client.connect(udpAddress, udpPort)) {
+    Serial.println("Connection to host failed");
+    delay(2000);
+  }else{
+    client.print(WiFi.macAddress());
+    client.print("1");
+  }
   
 }
 
