@@ -7,62 +7,131 @@ import environ
 env = environ.Env()
 environ.Env.read_env()
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-host = str(env("SERVER_SOCKET"))
-port = int(env("PORT_SOCKET"))
 
 
 
-server.bind((host, port ))
-server.listen()
-print(f"Server running on {host}:{port}")
+
+
+class ClientSocket:
+    socket_device = None
+    socket_web = None
+    name = None
+    mac = None
+
+    def __init__(self):
+        pass
+
+    def get_socket_device(self):
+        return self.socket_device
+
+    def set_socket_device(self,socket_device):
+        self.socket_device = socket_device
+
+    def get_socket_web(self):
+        return self.socket_web
+
+    def set_socket_web(self,socket_web):
+        self.socket_web = socket_web
+
+    def get_mac(self):
+        return self.mac
+
+    def set_mac(self,mac):
+        self.mac = mac
+
+
+
+
 
 class Command(BaseCommand):
 
     def __init__(self) -> None:
         self.clients = []
+        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def handle(self, *args, **options):
-        while True:
-            client, address = server.accept()
-            username = client.recv(1024).decode('utf-8')
+        host = str(env("SERVER_SOCKET"))
+        port = int(env("PORT_SOCKET"))
+        
 
-            #Al agregar un cliente establecer si es device o google ext
-            # Buscarlo en el listado y si existe se reemplaza {client}
-            self.clients.append(client)
-
-            print(type(client))
-
-            print(f"{username} is connected with {str(address)}")
-            thread = threading.Thread(target=self.handle_messages, args=(client,))
-            thread.start()
+        self.server.bind((host, port))
+        self.server.listen()
+        self.receive_connections()
 
 
 
-    def handle_messages(self, client):
+    def send_message( self,receiver , message ):
+        try:
+            receiver.send(message)
+        except:
+            print("Can't send message")
+        pass
+
+
+            
+    def handle_socket_web_msg(self,client: ClientSocket):
         while True:
             try:
-                message = client.recv(1024)
-                self.broadcast(message, client)
+                socket_web_msg = client.get_socket_web().recv(1024)
+                if not socket_web_msg:
+                    client.set_socket_web(None)
+                    break
+                
+                if( client.get_socket_web() is not None ):
+                    self.send_message( client.get_socket_device(), socket_web_msg )
+
+            except Exception as ex:
+                print("acá exception..." ,ex )
+                client.get_socket_web().close()
+                break
+        
+
+    def handle_socket_device_msg(self,client: ClientSocket):
+        while True:
+            try:
+                socket_device_msg = client.get_socket_device().recv(1024)
+                if not socket_device_msg:
+                    client.set_socket_device(None)
+                    break
+
+                if( client.get_socket_device() is not None ):
+                    self.send_message( client.get_socket_web(), socket_device_msg )
             except:
-                self.remove_client(client)
-                client.close()
+                client.get_socket_device().close()
                 break
 
+    def receive_connections(self):
+        while True:
+            client, address = self.server.accept()
+            mac = client.recv(1024).decode('utf-8')
+            type = client.recv(1024).decode('utf-8')
 
-    def broadcast(self,message, _client):
-        for client in self.clients:
-            if client != _client:
-                try:
-                    client.send(message)
-                except:
-                    #remove_client(client)
-                    print(f"Cannot send message to {client}")
-                    pass
-    
-    def remove_client(self,client):
-        index = self.clients.index(client)
-        #username = usernames[index]
-        #clients.remove(client)
-        #usernames.remove(username)
+            #Busca la mac entre listado de clientes vinculados, si existe modifica socket_device o socket_web
+            new_client = None
+            for sk_client in self.clients:
+                if sk_client.get_mac() == mac:
+                    new_client = sk_client
+
+            if new_client is None:
+                new_client = ClientSocket()
+                new_client.set_mac(mac)
+                self.clients.append(new_client)
+
+
+            if(type == '1'):
+                new_client.set_socket_device(client)
+                #Desde el integrado ESP32
+                thread = threading.Thread(target=self.handle_socket_device_msg, args=(new_client,))
+                thread.start()
+
+            elif(type =='2'):
+                new_client.set_socket_web(client)
+                #Desde el navegador
+                thread = threading.Thread(target=self.handle_socket_web_msg, args=(new_client,))
+                thread.start()
+                
+            print(f"{mac} is connected with {str(address)}")
+            
+
+
+
