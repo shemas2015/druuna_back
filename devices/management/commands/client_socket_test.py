@@ -2,8 +2,8 @@ import socket
 import threading
 
 
-host = '192.168.28.13'
-port = 55556
+host = '34.132.144.174'
+port = 8090
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((host, port))
