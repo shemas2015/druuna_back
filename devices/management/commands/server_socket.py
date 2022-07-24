@@ -105,35 +105,38 @@ class Command(BaseCommand):
 
     def receive_connections(self):
         while True:
-            client, address = self.server.accept()
-            mac = client.recv(1024).decode('utf-8')
-            type = client.recv(1024).decode('utf-8')
+            try:
+                client, address = self.server.accept()
+                mac = client.recv(1024).decode('utf-8')
+                type = client.recv(1024).decode('utf-8')
 
-            #Busca la mac entre listado de clientes vinculados, si existe modifica socket_device o socket_web
-            new_client = None
-            for sk_client in self.clients:
-                if sk_client.get_mac() == mac:
-                    new_client = sk_client
+                #Busca la mac entre listado de clientes vinculados, si existe modifica socket_device o socket_web
+                new_client = None
+                for sk_client in self.clients:
+                    if sk_client.get_mac() == mac:
+                        new_client = sk_client
 
-            if new_client is None:
-                new_client = ClientSocket()
-                new_client.set_mac(mac)
-                self.clients.append(new_client)
+                if new_client is None:
+                    new_client = ClientSocket()
+                    new_client.set_mac(mac)
+                    self.clients.append(new_client)
 
 
-            if(type == '1'):
-                new_client.set_socket_device(client)
-                #Desde el integrado ESP32
-                thread = threading.Thread(target=self.handle_socket_device_msg, args=(new_client,))
-                thread.start()
+                if(type == '1'):
+                    new_client.set_socket_device(client)
+                    #Desde el integrado ESP32
+                    thread = threading.Thread(target=self.handle_socket_device_msg, args=(new_client,))
+                    thread.start()
 
-            elif(type =='2'):
-                new_client.set_socket_web(client)
-                #Desde el navegador
-                thread = threading.Thread(target=self.handle_socket_web_msg, args=(new_client,))
-                thread.start()
-                
-            print(f"{mac} is connected with {str(address)}")
+                elif(type =='2'):
+                    new_client.set_socket_web(client)
+                    #Desde el navegador
+                    thread = threading.Thread(target=self.handle_socket_web_msg, args=(new_client,))
+                    thread.start()
+                    
+                print(f"{mac} is connected with {str(address)}")
+            except Exception as ex:
+                print(ex)
             
 
 
