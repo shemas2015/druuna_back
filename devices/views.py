@@ -9,6 +9,9 @@ from rest_framework.permissions import IsAuthenticated
 from devices.models import Device, Page, PageConfig, UserDevice
 from devices.serializers import ConfigModelSerializer, DeviceModelSerializer, DeviceUserModelSerializer, PageModelSerializer
 from rest_framework.decorators import action
+from rest_framework import viewsets , views
+import socket   
+import time
 
 
 
@@ -142,4 +145,27 @@ class ConfigViewSet(viewsets.ModelViewSet):
 
     #Get By id - Si el dispositivo no pertenece al usuario logueado no permite hacer la conexión
 
+class TestClientSocketView(views.APIView):
     
+    @classmethod
+    def get_extra_actions(cls):
+        return []
+
+    def get( self, request , seconds):
+        host = '34.132.144.174'
+        port = 8090
+
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.connect((host, port))
+
+        client.send(f"78:21:84:89:37:E8".encode("utf-8"))
+        time.sleep(0.3)
+        client.send(f"2".encode("utf-8"))
+        time.sleep(0.3)
+        client.send(f"{seconds}".encode("utf-8"))
+        
+        client.close()
+
+        return Response({"success" : seconds});
+
+

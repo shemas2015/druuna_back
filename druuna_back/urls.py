@@ -16,6 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.urls import path, include
+from devices import views as devices_views
 
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -27,6 +28,7 @@ from rest_framework_simplejwt.views import (
 urlpatterns = [
     path('', include(('devices.urls', 'devices'), namespace='devices')),
     path('', include(('users.urls', 'users'), namespace='users')),
+    path('test_device/<seconds>',  devices_views.TestClientSocketView.as_view() , name='token_obtain_pair'),
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
